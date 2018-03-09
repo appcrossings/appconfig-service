@@ -13,6 +13,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
@@ -29,6 +30,9 @@ public class AppConfigServiceImpl implements AppConfigService {
   private String filesystemRoot;
 
   private final ObjectMapper mapper = new ObjectMapper();
+  
+  @Autowired
+  private ConfigSourceResolver resolver;
 
   private final DefaultResourceLoader loader = new DefaultResourceLoader();
 
@@ -80,5 +84,14 @@ public class AppConfigServiceImpl implements AppConfigService {
       return Response.status(Status.INTERNAL_SERVER_ERROR).cacheControl(control).build();
 
     }
+  }
+
+  @Override
+  public Response getResolvedProperties(String path) {
+    
+    logger.debug("Requested path" + path);
+    resolver.resolveSource(path);
+    
+    return null;
   }
 }

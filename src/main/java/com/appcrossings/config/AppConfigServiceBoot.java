@@ -2,6 +2,7 @@ package com.appcrossings.config;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 
 @SpringBootApplication(scanBasePackages={"com.appcrossings.config"})
@@ -12,4 +13,8 @@ public class AppConfigServiceBoot {
     SpringApplication.run(AppConfigServiceBoot.class, args);
   }
 
+  @Bean
+  public ConfigSourceResolver buildResolver() {
+    return new ConfigSourceResolver();
+  }
 }

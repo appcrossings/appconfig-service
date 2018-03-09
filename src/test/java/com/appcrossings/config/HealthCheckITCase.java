@@ -9,14 +9,15 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-@SpringApplicationConfiguration(classes = {AppConfigServiceBoot.class})
-@WebIntegrationTest
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {AppConfigServiceBoot.class})
 public class HealthCheckITCase extends AbstractTestNGSpringContextTests {
 
   @Test
@@ -31,7 +32,7 @@ public class HealthCheckITCase extends AbstractTestNGSpringContextTests {
     try {
 
       e = response.getEntity();
-      
+
       Assert.assertNotNull(e);
       Assert.assertEquals(response.getStatusLine().getStatusCode(), 200);
 
