@@ -11,6 +11,8 @@ service:
       user: null
       password: null
       context: /appx-b
+      fileName: "default.properties"
+      mergeStrategy: "default"
     file:
       root: /var/tmp/configs
       context: /appx-c
