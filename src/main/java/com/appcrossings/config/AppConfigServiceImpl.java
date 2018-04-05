@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import com.appcrossings.config.source.ConfigSource;
 import com.appcrossings.config.strategy.DefaultMergeStrategy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -39,20 +40,19 @@ public class AppConfigServiceImpl implements AppConfigService {
 
     logger.debug("Requested path" + path);
 
-    ConfigSource source = resolver.resolveSource(path);
+    ConfigSource source = resolver.resolveByUri(path);
     Properties props = new Properties();
     try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
 
       if (traverse == null || !traverse) {
 
-        props = source.fetchConfig(path, Config.DEFAULT_PROPERTIES_FILE_NAME);
+        props = source.fetchConfig(path);
         props.store(output, "");
 
       } else {
 
         // TODO: Make default properties file configurable
-        props = source.traverseConfigs(path, Config.DEFAULT_PROPERTIES_FILE_NAME,
-            new DefaultMergeStrategy());
+        props = source.traverseConfigs(path);
 
       }
 
