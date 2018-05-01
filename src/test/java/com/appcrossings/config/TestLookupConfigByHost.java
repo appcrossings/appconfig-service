@@ -26,7 +26,7 @@ public class TestLookupConfigByHost {
 
     Response resp = service.resoveHost("env", "http/hosts.properties", body);
     Assert.assertNotNull(resp);
-    Assert.assertEquals(Integer.valueOf(StatusCodes.TEMPORARY_REDIRECT),
+    Assert.assertEquals(Integer.valueOf(StatusCodes.SEE_OTHER),
         Integer.valueOf(resp.getStatus()));
 
   }
