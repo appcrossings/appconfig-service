@@ -3,16 +3,17 @@ package com.appcrossings.config;
 import java.util.HashMap;
 import javax.ws.rs.core.Response;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import com.appcrossings.config.util.Environment;
 import io.undertow.util.StatusCodes;
 
+@Ignore
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {AppConfigServiceBoot.class})
+@SpringBootTest(classes = {ApplicationContext.class})
 public class TestLookupConfigByHost {
 
   @Autowired
@@ -24,7 +25,7 @@ public class TestLookupConfigByHost {
     HashMap<String, Object> body = new HashMap<>();
     body.put(Environment.HOST_NAME, "kkarski-ibm");
 
-    Response resp = service.resoveHost("env", "http/hosts.properties", body);
+    Response resp = service.discover("env", "http/hosts.properties", body);
     Assert.assertNotNull(resp);
     Assert.assertEquals(Integer.valueOf(StatusCodes.SEE_OTHER),
         Integer.valueOf(resp.getStatus()));

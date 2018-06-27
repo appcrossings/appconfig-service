@@ -8,7 +8,7 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-@ContextConfiguration(classes = {AppConfigServiceBoot.class})
+@ContextConfiguration(classes = {ApplicationContext.class})
 public class TestHealthCheck extends AbstractTestNGSpringContextTests {
 
   @Autowired

@@ -24,3 +24,20 @@ service:
       file:
         uri: classpath:/config
         context: /appx-d
+    file-repo:
+      file:
+        uri: file:src/main/resources
+        context: /file-repo
+    classpath-repo:
+      file:
+        uri: classpath:/env
+        context: /classpath-repo
+    http-repo:
+      file:
+        uri: http://config.appcrossings.com
+        root: /env
+        context: /http-repo
+    default:
+      file:
+        uri: classpath:/env
+        context: /

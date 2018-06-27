@@ -12,26 +12,27 @@ import org.apache.commons.collections.map.HashedMap;
 import org.glassfish.jersey.client.ClientProperties;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.junit4.SpringRunner;
-import com.appcrossings.config.util.Environment;
 
+@Ignore
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {AppConfigServiceBoot.class},
+@SpringBootTest(classes = {ApplicationContext.class},
     webEnvironment = WebEnvironment.DEFINED_PORT)
 public class LookupConfigByHostITCase {
 
-  private Client client;
-  private WebTarget target;
+  protected Client client;
+  protected WebTarget target;
 
   @Before
-  public void init() {
+  public void init() throws Exception {
 
     client = ClientBuilder.newClient();
-    target = client.target("http://localhost:8891/configrd/v1");
+    target = client.target("http://localhost:8891/configrd/v1/q/");
 
   }
 
@@ -45,7 +46,7 @@ public class LookupConfigByHostITCase {
 
     target.property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
     
-    Response resp = target.path("/q/env/http/hosts.properties").request(MediaType.APPLICATION_JSON)
+    Response resp = target.path("env/http/hosts.properties").request(MediaType.APPLICATION_JSON)
         .accept(MediaType.WILDCARD).post(Entity.entity(post, MediaType.APPLICATION_JSON));
     
     Assert.assertEquals(303, resp.getStatus());
@@ -63,7 +64,7 @@ public class LookupConfigByHostITCase {
 
     target.property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
     
-    Response resp = target.path("/q/env/http/hosts.properties").request(MediaType.APPLICATION_JSON)
+    Response resp = target.path("/env/http/hosts.properties").request(MediaType.APPLICATION_JSON)
         .accept(MediaType.WILDCARD).post(Entity.entity(post, MediaType.APPLICATION_JSON));
     
     Assert.assertEquals(303, resp.getStatus());
@@ -81,7 +82,7 @@ public class LookupConfigByHostITCase {
 
     target.property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
     
-    Response resp = target.path("/q/env/http/hosts.properties").request(MediaType.APPLICATION_JSON)
+    Response resp = target.path("/env/http/hosts.properties").request(MediaType.APPLICATION_JSON)
         .accept(MediaType.WILDCARD).post(Entity.entity(post, MediaType.APPLICATION_JSON));
     
     Assert.assertEquals(303, resp.getStatus());
@@ -99,7 +100,7 @@ public class LookupConfigByHostITCase {
 
     target.property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
     
-    Response resp = target.path("/q/env/http/hosts.properties").request(MediaType.APPLICATION_JSON)
+    Response resp = target.path("/env/http/hosts.properties").request(MediaType.APPLICATION_JSON)
         .accept(MediaType.WILDCARD).post(Entity.entity(post, MediaType.APPLICATION_JSON));
     
     Assert.assertEquals(303, resp.getStatus());

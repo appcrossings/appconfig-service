@@ -6,6 +6,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,10 +15,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {AppConfigServiceBoot.class}, webEnvironment = WebEnvironment.DEFINED_PORT)
+@SpringBootTest(classes = {ApplicationContext.class}, webEnvironment = WebEnvironment.DEFINED_PORT)
 public class HealthCheckITCase {
 
-  Client client = ClientBuilder.newClient();
+  Client client = null;
+
+  @Before
+  public void init() {
+    client = ClientBuilder.newClient();
+  }
 
   @Test
   public void testHealthEndpoint() throws Exception {
