@@ -1,14 +1,12 @@
 package com.appcrossings.config;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.CacheControl;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
@@ -19,15 +17,14 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import com.appcrossings.config.source.ConfigSource;
+import com.appcrossings.config.util.StringUtils;
 import com.appcrossings.config.util.UriUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jsoniter.output.JsonStream;
 
 @Service
 public class AppConfigServiceImpl implements AppConfigService {
 
   private static final Logger logger = LoggerFactory.getLogger(AppConfigService.class);
-
-  private final ObjectMapper mapper = new ObjectMapper();
 
   @Autowired
   private ConfigSourceResolver resolver;
@@ -35,9 +32,7 @@ public class AppConfigServiceImpl implements AppConfigService {
   private final DefaultResourceLoader loader = new DefaultResourceLoader();
 
   @Override
-  public Response getTextProperties(
-      @DefaultValue(ConfigSourceResolver.DEFAULT_REPO_NAME) String repo, String path,
-      @DefaultValue("true") Boolean traverse, UriInfo info) {
+  public Response getTextProperties(String repo, String path, Boolean traverse, UriInfo info) {
 
     logger.debug("Requested path" + path);
 
@@ -46,23 +41,20 @@ public class AppConfigServiceImpl implements AppConfigService {
 
     Properties props = getProperties(repo, path, traverse, named);
 
-    if (props.size() > 0) {
+    if (!props.isEmpty()) {
 
-      try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+      StringBuilder builder = new StringBuilder();
 
-        props.store(output, "");
-        resp = Response.status(Status.OK).entity(output.toByteArray()).encoding("UTF-8").build();
+      props.entrySet().stream().forEach(p -> {
+        builder.append(p.getKey()).append("=").append(p.getValue()).append("\n");
+      });
 
-      } catch (FileNotFoundException not) {
+      resp = Response.ok(builder.toString(), MediaType.TEXT_PLAIN).encoding("UTF-8").build();
 
-        logger.info(not.getMessage());
+    } else {
 
-      } catch (IOException io) {
+      resp = Response.noContent().build();
 
-        logger.error(io.getMessage());
-        resp = Response.status(Status.INTERNAL_SERVER_ERROR).build();
-
-      }
     }
 
     return resp;
@@ -70,6 +62,12 @@ public class AppConfigServiceImpl implements AppConfigService {
   }
 
   protected Properties getProperties(String repo, String path, boolean traverse, String[] named) {
+
+    if (!StringUtils.hasText(repo))
+      repo = ConfigSourceResolver.DEFAULT_REPO_NAME;
+
+    if (!StringUtils.hasText(path))
+      path = "/";
 
     Optional<ConfigSource> source = resolver.findByRepoName(repo);
     Properties props = new Properties();
@@ -106,7 +104,7 @@ public class AppConfigServiceImpl implements AppConfigService {
       Map<Object, Object> health = new HashMap<Object, Object>();
       health.putAll(props);
 
-      return Response.ok(mapper.writeValueAsString(health)).cacheControl(control).build();
+      return Response.ok(JsonStream.serialize(health)).cacheControl(control).build();
 
     } catch (Exception e) {
 
@@ -158,12 +156,9 @@ public class AppConfigServiceImpl implements AppConfigService {
   }
 
   /*
-  @Override
-  public Response patch(String repo, String path, String eTag) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-  */
+   * @Override public Response patch(String repo, String path, String eTag) { // TODO Auto-generated
+   * method stub return null; }
+   */
 
   @Override
   public Response discoveryOptions(String repo, String path, HashMap<String, Object> envProps) {
@@ -181,9 +176,10 @@ public class AppConfigServiceImpl implements AppConfigService {
 
     Properties props = getProperties(repo, path, traverse, named);
 
-    if (props.size() > 0) {
+    if (!props.isEmpty()) {
 
-      resp = Response.status(Status.OK).entity(props).encoding("UTF-8").build();
+      resp = Response.ok(JsonStream.serialize(props.entrySet()), MediaType.APPLICATION_JSON)
+          .encoding("UTF-8").build();
 
     }
 
@@ -201,9 +197,9 @@ public class AppConfigServiceImpl implements AppConfigService {
 
     Properties props = getProperties(repo, path, traverse, named);
 
-    if (props.size() > 0) {
+    if (!props.isEmpty()) {
 
-      resp = Response.status(Status.OK).entity(props).encoding("UTF-8").build();
+      resp = Response.ok(props, "application/x-yml").encoding("UTF-8").build();
 
     }
 

@@ -1,43 +1,29 @@
 service:
+  defaults:
+    fileName: default.properties
+    hostsName: hosts.properties
   repos:
     git-master:
-      git:
-        uri: git@github.com:appcrossings/appconfig-client.git#master
-        root: src/test/resources
-        user: null
-        password: null
-        context: /appx-a
-        fileName: "default.properties"
-    git-resource:
-      http:
-        uri: https://github.com/appcrossings/appconfig-client/tree/master/src/test/resources
-        user: null
-        password: null
-        context: /appx-b
-        fileName: "default.properties"
-        mergeStrategyClass: "com.appcrossings.config.strategy.DefaultMergeStrategy"
+      uri: git://git@github.com:appcrossings/appconfig-client.git#master
+      root: src/test/resources
+    http-resource:
+      uri: https://raw.githubusercontent.com/appcrossings/appconfig-client/master/src/test/resources
+      username: 
+      password:
+      fileName: default.properties
+      hostsName: hosts.properties
+      named:
+        custom: env/dev/custom
+        simple: env/dev/simple
     tmp-configs:
-      file:
-        uri: file:/var/tmp/configs
-        context: /appx-c
+      uri: file:/var/tmp/configs
+    appx-d:
+      uri: classpath:/env/dev
+      fileName: default.json
     classpath:
-      file:
-        uri: classpath:/config
-        context: /appx-d
-    file-repo:
-      file:
-        uri: file:src/main/resources
-        context: /file-repo
-    classpath-repo:
-      file:
-        uri: classpath:/env
-        context: /classpath-repo
-    http-repo:
-      file:
-        uri: http://config.appcrossings.com
-        root: /env
-        context: /http-repo
+      uri: classpath:/
     default:
-      file:
-        uri: classpath:/env
-        context: /
+      uri: classpath:/
+      named:
+        custom: env/dev/custom
+        simple: env/dev/simple
