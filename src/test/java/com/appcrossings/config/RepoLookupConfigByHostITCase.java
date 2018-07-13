@@ -7,20 +7,13 @@ import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.context.annotation.Bean;
-import org.springframework.test.context.junit4.SpringRunner;
-import com.appcrossings.config.util.StringUtils;
 
 @Ignore
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {RepoLookupConfigByHostITCase.LocalAppContext.class},
-    webEnvironment = WebEnvironment.DEFINED_PORT)
 public class RepoLookupConfigByHostITCase extends LookupConfigByHostITCase {
+
+  static {
+    System.setProperty("repo", "classpath:repo-defaults.yml");
+  }
 
   @Rule
   public TemporaryFolder folder = new TemporaryFolder();
@@ -50,24 +43,6 @@ public class RepoLookupConfigByHostITCase extends LookupConfigByHostITCase {
   @After
   public void cleanup() throws Exception {
     FileUtils.forceDelete(folder.getRoot());
-  }
-
-  @SpringBootApplication
-  public static class LocalAppContext {
-
-    public static void main(String[] args) {
-      SpringApplication.run(ApplicationContext.class, args);
-    }
-
-    @Bean
-    public ConfigSourceResolver buildConfigClient() {
-
-      if (StringUtils.hasText(temp.getAbsolutePath())) {
-        return new ConfigSourceResolver(temp.getAbsolutePath());
-      } else {
-        return new ConfigSourceResolver("classpath:repo-defaults.yml");
-      }
-    }
   }
 
 }

@@ -1,5 +1,6 @@
 package com.appcrossings.config;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -12,24 +13,17 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Service;
+import com.appcrossings.config.processor.PropertiesProcessor;
 import com.appcrossings.config.source.ConfigSource;
 import com.appcrossings.config.util.StringUtils;
 import com.appcrossings.config.util.UriUtil;
 import com.jsoniter.output.JsonStream;
 
-@Service
 public class AppConfigServiceImpl implements AppConfigService {
 
   private static final Logger logger = LoggerFactory.getLogger(AppConfigService.class);
 
-  @Autowired
-  private ConfigSourceResolver resolver;
-
-  private final DefaultResourceLoader loader = new DefaultResourceLoader();
+  private final ConfigSourceResolver resolver = new ConfigSourceResolver();
 
   @Override
   public Response getTextProperties(String repo, String path, Boolean traverse, UriInfo info) {
@@ -70,7 +64,7 @@ public class AppConfigServiceImpl implements AppConfigService {
       path = "/";
 
     Optional<ConfigSource> source = resolver.findByRepoName(repo);
-    Properties props = new Properties();
+    Map<String, Object> props = new HashMap<>();
 
     if (source.isPresent()) {
 
@@ -85,7 +79,7 @@ public class AppConfigServiceImpl implements AppConfigService {
       }
     }
 
-    return props;
+    return PropertiesProcessor.asProperties(props);
   }
 
   @Override
@@ -97,9 +91,9 @@ public class AppConfigServiceImpl implements AppConfigService {
 
     try {
 
-      Resource r = loader.getResource("health.properties");
+      InputStream r = getClass().getClassLoader().getResourceAsStream("health.properties");
       Properties props = new Properties();
-      props.load(r.getInputStream());
+      props.load(r);
 
       Map<Object, Object> health = new HashMap<Object, Object>();
       health.putAll(props);

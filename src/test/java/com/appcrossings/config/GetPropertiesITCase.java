@@ -1,6 +1,5 @@
 package com.appcrossings.config;
 
-import java.io.StringBufferInputStream;
 import java.io.StringReader;
 import java.util.Properties;
 import javax.ws.rs.client.Client;
@@ -8,24 +7,32 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.junit4.SpringRunner;;
+import org.slf4j.LoggerFactory;;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ApplicationContext.class}, webEnvironment = WebEnvironment.DEFINED_PORT)
+
 public class GetPropertiesITCase {
-  
+
   private static final Logger logger = LoggerFactory.getLogger(GetPropertiesITCase.class);
 
   protected Client client;
   protected WebTarget target;
+
+  @BeforeClass
+  public static void boot() {
+    System.setProperty("repo", "classpath:repos.yaml");
+    ConfigServer.start("8891");
+  }
+
+  @AfterClass
+  public static void shutdown() {
+    ConfigServer.stop();
+  }
 
   @Before
   public void init() throws Exception {
@@ -40,24 +47,25 @@ public class GetPropertiesITCase {
 
     Response resp = target.path("/").request(MediaType.TEXT_PLAIN).get();
     Assert.assertEquals(200, resp.getStatus());
-    
+
     String body = resp.readEntity(String.class);
     Properties props = new Properties();
     props.load(new StringReader(body));
-    
+
     Assert.assertEquals(3, props.size());
   }
-  
+
   @Test
   public void testGetPropertiesFromNamedRepo() throws Exception {
 
-    Response resp = target.path("/").queryParam("repo", "classpath").request(MediaType.TEXT_PLAIN).get();
+    Response resp =
+        target.path("/").queryParam("repo", "classpath").request(MediaType.TEXT_PLAIN).get();
     Assert.assertEquals(200, resp.getStatus());
-    
+
     String body = resp.readEntity(String.class);
     Properties props = new Properties();
     props.load(new StringReader(body));
-    
+
     Assert.assertEquals(3, props.size());
   }
 

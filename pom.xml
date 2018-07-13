@@ -13,81 +13,159 @@
 		<developerConnection>scm:git:https://github.com/appcrossings/appconfig-service</developerConnection>
 	</scm>
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jersey</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-tomcat</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
+			<version>2.6</version>
 		</dependency>
 		<dependency>
 			<groupId>com.appcrossings.config</groupId>
 			<artifactId>appconfig-client</artifactId>
 			<version>2.0.0</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-undertow</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-logging</artifactId>
-		</dependency>
+
 		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
 			<artifactId>jersey-client</artifactId>
-			<scope>test</scope>
+			<version>2.26</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<scope>test</scope>
 			<version>20.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.jaxrs</groupId>
-			<artifactId>jackson-jaxrs-json-provider</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.bettercloud</groupId>
 			<artifactId>vault-java-driver</artifactId>
 			<version>3.1.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-core</artifactId>
+			<version>1.11.285</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.undertow</groupId>
+			<artifactId>undertow-core</artifactId>
+			<version>2.0.0.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>io.undertow</groupId>
+			<artifactId>undertow-servlet</artifactId>
+			<version>2.0.0.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-servlet</artifactId>
+			<version>2.26</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.junit.vintage</groupId>
+		    <artifactId>junit-vintage-engine</artifactId>
+		    <version>5.2.0</version>
+		    <scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-json-provider</artifactId>
+			<version>2.9.4</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.2.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
+			<version>1.7.25</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
+			<version>2.26</version>
+		</dependency>
 	</dependencies>
+	<groupId>com.appcrossings.config</groupId>
+	<version>2.0.0</version>
+	<properties>
+		<build.timestamp>${maven.build.timestamp}</build.timestamp>
+		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
+		<java.version>1.8</java.version>
+	</properties>
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>1.3.2.RELEASE</version>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.0</version>
+				<executions>
+					<execution>
+						<id>jacoco-initialize</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>jacoco-site</id>
+						<phase>package</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.6.1</version>
 				<configuration>
-					<mainClass>com.appcrossings.config.AppConfigServiceBoot</mainClass>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<encoding>UTF-8</encoding>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19.1</version>
+				<configuration>
+					<includes>
+						<include>**/Test*.java</include>
+					</includes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.19.1</version>
 				<executions>
 					<execution>
 						<goals>
-							<goal>repackage</goal>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<includes>
+						<include>**/*ITCase.java</include>
+					</includes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
 						</goals>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
 	</build>
-	<parent>
-		<groupId>com.appcrossings.config</groupId>
-		<artifactId>appconfig-pom</artifactId>
-		<version>2.0.0</version>
-	</parent>
 </project>
