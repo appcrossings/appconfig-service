@@ -4,6 +4,7 @@ import javax.servlet.ServletException;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.amazonaws.util.Throwables;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.handlers.PathHandler;
@@ -18,43 +19,59 @@ public class ConfigServer {
   private static Undertow server;
   private static DeploymentManager deploymentManager;
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Throwable {
 
     start(args[0]);
   }
 
-  protected static void start(String port) {
+  protected static void start(String port) throws Throwable {
+    
+    long start = System.currentTimeMillis();
+    
     System.setProperty("org.jboss.logging.provider", "slf4j");
 
-    PathHandler path = Handlers.path();
+    if (server == null) {
 
-    server = Undertow.builder().addHttpListener(Integer.valueOf(port), "localhost").setHandler(path)
-        .build();
+      PathHandler path = Handlers.path();
 
-    server.start();
+      server = Undertow.builder().addHttpListener(Integer.valueOf(port), "localhost")
+          .setHandler(path).build();
 
-    logger.info("Server started on port " + port);
+      try {
+        server.start();
+      } catch (Exception e) {
+        Throwable ex = Throwables.getRootCause(e);
+        logger.error(ex.getMessage(), ex);
+        throw ex;
+      }
 
-    DeploymentInfo servletBuilder = Servlets.deployment()
-        .setClassLoader(ConfigServer.class.getClassLoader()).setContextPath("/")
-        .setResourceManager(new ClassPathResourceManager(ConfigServer.class.getClassLoader()))
-        .addServlets(Servlets.servlet("jerseyServlet", ServletContainer.class).setLoadOnStartup(1)
-            .addInitParam("javax.ws.rs.Application", JerseyConfig.class.getName())
-            .addMapping("/configrd/*"))
-        .setDeploymentName("Application.war");
+      logger.info("Server started on port " + port);
 
-    logger.info("Starting application deployment");
+      DeploymentInfo servletBuilder = Servlets.deployment()
+          .setClassLoader(ConfigServer.class.getClassLoader()).setContextPath("/")
+          .setResourceManager(new ClassPathResourceManager(ConfigServer.class.getClassLoader()))
+          .addServlets(Servlets.servlet("jerseyServlet", ServletContainer.class).setLoadOnStartup(1)
+              .addInitParam("javax.ws.rs.Application", JerseyConfig.class.getName())
+              .addMapping("/configrd/*"))
+          .setDeploymentName("Application.war");
 
-    deploymentManager = Servlets.defaultContainer().addDeployment(servletBuilder);
-    deploymentManager.deploy();
+      logger.info("Starting application deployment");
 
-    try {
-      path.addPrefixPath("/", deploymentManager.start());
-    } catch (ServletException e) {
-      throw new RuntimeException(e);
+      deploymentManager = Servlets.defaultContainer().addDeployment(servletBuilder);
+      deploymentManager.deploy();
+
+      try {
+        path.addPrefixPath("/", deploymentManager.start());
+      } catch (ServletException e) {
+        Throwable ex = Throwables.getRootCause(e);
+        logger.error(ex.getMessage(), ex);
+        throw ex;
+      }
+
+      logger.info("Application deployed");
     }
-
-    logger.info("Application deployed");
+    
+    logger.info("Server started in " + (System.currentTimeMillis() - start) / 60 + "s");
 
   }
 
@@ -68,7 +85,8 @@ public class ConfigServer {
 
     deploymentManager.undeploy();
     server.stop();
-
+    server = null;
+    
     logger.info("Server stopped");
   }
 

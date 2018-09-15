@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringJoiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.appcrossings.config.exception.AuthenticationException;
+import com.appcrossings.config.hashicorp.util.VaultUtil;
 import com.appcrossings.config.util.StringUtils;
 import com.jsoniter.JsonIterator;
 import com.jsoniter.output.JsonStream;
@@ -35,14 +35,17 @@ public class VaultAuthenticator {
         new OkHttpClient.Builder().retryOnConnectionFailure(true).followRedirects(true).build();
   }
 
-  public String authenticate(URI uri, HashicorpRepoDef values, String method) {
+  public String authenticate(URI uri, HashicorpRepoDef values) {
 
     AuthResponse auth = null;
+
+    if (values.getAuthMethod() == null)
+      throw new AuthenticationException("No authentication method specified");
 
     if (StringUtils.hasText(client_token))
       return client_token;
 
-    switch (method.toLowerCase()) {
+    switch (values.getAuthMethod().toLowerCase()) {
       case "userpass":
         auth = loginByUserPass(uri, values.getUsername(), values.getPassword());
 
@@ -54,7 +57,8 @@ public class VaultAuthenticator {
 
     if (auth == null || auth.auth == null || !StringUtils.hasText(auth.auth.client_token)) {
 
-      throw new RuntimeException("Unable to authenticate via method: " + method);
+      throw new AuthenticationException("Unable to authenticate via method: "
+          + values.getAuthMethod() + "No client token returned");
 
     } else {
 
@@ -75,7 +79,7 @@ public class VaultAuthenticator {
 
     String json = JsonStream.serialize(params);
 
-    String url = extractBaseURL(uri) + "/auth/userpass/login/" + username;
+    String url = VaultUtil.extractBaseURL(uri) + "/v1/auth/userpass/login/" + username;
 
     Request req = new Request.Builder().post(RequestBody.create(mediaType, json)).url(url).build();
 
@@ -118,7 +122,7 @@ public class VaultAuthenticator {
 
     AuthResponse auth = null;
 
-    String url = extractBaseURL(uri) + "/auth/token/renew-self";
+    String url = VaultUtil.extractBaseURL(uri) + "/v1/auth/token/renew-self";
 
     Request req = new Request.Builder().post(RequestBody.create(mediaType, "{}")).url(url)
         .addHeader(TOKEN_HEADER, token).build();
@@ -164,69 +168,6 @@ public class VaultAuthenticator {
     return token_renewable;
   }
 
-  protected String extractBaseURL(URI uri) {
-
-    String path = uri.getPath();
-    String[] segments = path.split("/");
-
-    StringJoiner joiner = new StringJoiner("/");
-
-    for (int i = 0; i < segments.length; i++) {
-
-      if (StringUtils.hasText(segments[i])
-          && (segments[i].equalsIgnoreCase("v1") || segments[i].equalsIgnoreCase("v2"))) {
-        joiner.add(segments[i]);
-        break;
-      }
-
-      joiner.add(segments[i]);
-
-    }
-
-    String baseURL = uri.getScheme() + "://" + uri.getHost();
-
-    if (uri.getPort() > 0)
-      baseURL += ":" + uri.getPort();
-
-    baseURL += joiner.toString();
-
-    return baseURL;
-
-  }
-
-  protected String extractMount(URI uri) {
-
-    String path = uri.getPath();
-    String[] segments = path.split("/");
-    String mount = null;
-
-    for (int i = 0; i < segments.length; i++) {
-      if (StringUtils.hasText(segments[i])
-          && (segments[i].equalsIgnoreCase("v1") || segments[i].equalsIgnoreCase("v2"))
-          && segments.length > i) {
-        mount = segments[i + 1];
-        break;
-      }
-    }
-
-    if (!StringUtils.hasText(mount))
-      throw new IllegalArgumentException("Unable to find mount name in uri " + uri.toString());
-
-    return mount;
-
-  }
-
-  protected int extractVersion(URI uri) {
-
-    String path = uri.getPath();
-    if (path.contains("/v1/"))
-      return 1;
-    else if (path.contains("/v2/"))
-      return 2;
-
-    return 1;
-
-  }
 
 
 }

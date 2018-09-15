@@ -6,6 +6,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import com.appcrossings.config.exception.AuthenticationException;
+import com.appcrossings.config.hashicorp.HashicorpRepoDef.AuthMethod;
 
 public class VaultAuthenticatorITCase {
 
@@ -25,8 +26,9 @@ public class VaultAuthenticatorITCase {
     HashicorpRepoDef def = new HashicorpRepoDef("VaultAuthenticatorITCase", new HashMap<>());
     def.setUsername("test");
     def.setPassword("password");
+    def.setAuthMethod(AuthMethod.UserPass.name());
 
-    token = auth.authenticate(uri, def, "userpass");
+    token = auth.authenticate(uri, def);
     Assert.assertNotNull(token);
 
     AuthResponse resp = auth.renewToken(uri, token);

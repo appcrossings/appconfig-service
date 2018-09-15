@@ -2,42 +2,22 @@ package com.appcrossings.config;
 
 import java.io.StringReader;
 import java.util.Properties;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;;
 
 
-public class GetPropertiesITCase {
+public class GetPropertiesITCase extends AbstractITCase {
 
   private static final Logger logger = LoggerFactory.getLogger(GetPropertiesITCase.class);
 
-  protected Client client;
-  protected WebTarget target;
-
-  @BeforeClass
-  public static void boot() {
-    System.setProperty("repo", "classpath:repos.yaml");
-    ConfigServer.start("8891");
-  }
-
-  @AfterClass
-  public static void shutdown() {
-    ConfigServer.stop();
-  }
-
   @Before
   public void init() throws Exception {
-
-    client = ClientBuilder.newClient();
+    super.init();
     target = client.target("http://localhost:8891/configrd/v1/");
 
   }

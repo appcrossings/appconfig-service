@@ -1,5 +1,6 @@
 package com.appcrossings.config.hashicorp;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -7,6 +8,7 @@ import com.appcrossings.config.source.DefaultConfigSource;
 import com.appcrossings.config.source.PropertyPacket;
 import com.appcrossings.config.source.StreamSource;
 import com.appcrossings.config.source.WritableConfigSource;
+import com.appcrossings.config.util.StringUtils;
 
 public class HashicorpVaultConfigSource extends DefaultConfigSource
     implements WritableConfigSource {
@@ -35,24 +37,29 @@ public class HashicorpVaultConfigSource extends DefaultConfigSource
   public boolean put(String path, Map<String, Object> props) {
 
     HashicorpVaultStreamSource source = (HashicorpVaultStreamSource) getStreamSource();
-    boolean success = source.put(path, null, props);
+    PropertyPacket packet = new PropertyPacket(URI.create(path));
+    packet.putAll(props);
+    boolean success = source.put(path, packet);
     return success;
+    
   }
 
   @Override
-  public boolean patch(String path, String etag, String key, Object value) {
+  public boolean patch(String path, String etag, Map<String, Object> props) {
 
-    Map<String, Object> existing = new HashMap<>();
-
+    PropertyPacket existing = new PropertyPacket(URI.create(path));
     Optional<PropertyPacket> packet = getStreamSource().stream(path);
 
     if (packet.isPresent())
       existing = packet.get();
 
-    existing.put(key, value);
+    existing.putAll(props);
+    
+    if(StringUtils.hasText(etag))
+      existing.setETag(etag);
 
     HashicorpVaultStreamSource source = (HashicorpVaultStreamSource) getStreamSource();
-    boolean success = source.put(path, packet.get().getETag(), existing);
+    boolean success = source.put(path, existing);
     return success;
 
   }

@@ -1,32 +1,33 @@
 package com.appcrossings.config.hashicorp;
 
+import java.io.IOException;
 import java.net.URI;
-import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.appcrossings.config.hashicorp.util.RequestBuilder;
+import com.appcrossings.config.hashicorp.util.RequestBuilder.PutKV_v2;
+import com.appcrossings.config.hashicorp.util.VaultUtil;
 import com.appcrossings.config.source.PropertyPacket;
 import com.appcrossings.config.source.RepoDef;
 import com.appcrossings.config.source.StreamSource;
-import com.appcrossings.config.util.FNV;
-import com.appcrossings.config.util.StringUtils;
 import com.appcrossings.config.util.URIBuilder;
-import com.bettercloud.vault.Vault;
-import com.bettercloud.vault.VaultConfig;
-import com.bettercloud.vault.VaultException;
-import com.bettercloud.vault.response.AuthResponse;
-import com.bettercloud.vault.response.LogicalResponse;
 import com.google.common.base.Throwables;
+import com.jsoniter.JsonIterator;
+import com.jsoniter.any.Any;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class HashicorpVaultStreamSource implements StreamSource {
 
   private final static Logger logger = LoggerFactory.getLogger(HashicorpVaultStreamSource.class);
+  private final VaultAuthenticator authenticator = new VaultAuthenticator();
 
-  private Vault vault;
   private final HashicorpRepoDef repoDef;
-  private VaultConfig config;
   private final URIBuilder builder;
-  private AuthResponse authResp;
+
+  private OkHttpClient client;
 
   public static final String HASHICORP_VAULT = "hashicorp_vault";
 
@@ -35,56 +36,30 @@ public class HashicorpVaultStreamSource implements StreamSource {
     this.repoDef = repoDef;
     this.builder = URIBuilder.create(repoDef.getUri());
 
-    try {
-
-      if (StringUtils.hasText(repoDef.getToken())) {
-        config = new VaultConfig().address(repoDef.getUri()).token(repoDef.getToken()).build();
-      } else {
-        config = new VaultConfig().address(repoDef.getUri());
-      }
-
-    } catch (VaultException e) {
-      Throwables.propagateIfPossible(e);
-    }
   }
 
-  public boolean put(String path, String etag, Map<String, Object> vals) {
+  public boolean put(String path, PropertyPacket packet) {
 
     boolean success = false;
 
-    if (etag != null) {
+    Request put = null;
 
-      Optional<PropertyPacket> packet = stream(path);
+    switch (VaultUtil.detectVersion(repoDef.toURI())) {
+      case 1:
+        put = RequestBuilder.v1_postKv(repoDef, path, packet);
+      case 2:
+        put = RequestBuilder.v2_postKv(repoDef, path, packet.getETag(), packet);
+    }
 
-      // Apply optimistic lock
-      if (packet.isPresent() && etag.equals(packet.get().getETag())) {
+    logger.debug("Put to " + put.toString());
+    try {
 
-        try {
+      Response response = client.newCall(put).execute();
+      success = response.isSuccessful();
 
-          LogicalResponse resp = vault.withRetries(5, 1000).logical().write(path, vals);
-
-          if (resp.getRestResponse().getStatus() == 200)
-            success = true;
-
-        } catch (VaultException e) {
-          logger.error(e.getMessage(), e);
-          // TODO: handle exception
-        }
-
-      }
-    } else {
-
-      try {
-
-        LogicalResponse resp = vault.withRetries(5, 1000).logical().write(path, vals);
-
-        if (resp.getRestResponse().getStatus() == 200)
-          success = true;
-
-      } catch (VaultException e) {
-        logger.error(e.getMessage(), e);
-        // TODO: handle exception
-      }
+    } catch (IOException e) {
+      logger.error(e.getMessage(), e);
+      Throwables.propagateIfPossible(e);
     }
 
     return success;
@@ -96,29 +71,40 @@ public class HashicorpVaultStreamSource implements StreamSource {
 
     Optional<PropertyPacket> packet = Optional.empty();
 
+    Request get = RequestBuilder.v2_getKv(repoDef, path);
+    logger.debug("Get from " + get.toString());
     try {
 
-      final LogicalResponse response = vault.withRetries(5, 1000).logical().read(path);
+      final Response response = client.newCall(get).execute();
 
-      if (!response.getData().isEmpty()) {
-        Map<String, String> vals = response.getData();
+      if (response.isSuccessful()) {
+
+        Any vals = JsonIterator.deserialize(response.body().bytes());
 
         PropertyPacket p = new PropertyPacket(prototypeURI(path));
-        StringBuilder builder = new StringBuilder();
-        vals.values().stream().sorted().forEach(s -> {
-          builder.append(s);
-        });
-        p.setETag(FNV.fnv1_64(builder.toString().getBytes()).toString());
-        p.putAll(vals);
+
+        if (vals.get("data") != null) {
+          PutKV_v2 data = vals.get("data").as(RequestBuilder.PutKV_v2.class);
+
+          if (data.getMetadata().containsKey("version")) {
+            p.setETag(String.valueOf(data.getMetadata().get("version")));
+          }
+
+          p.putAll(data.getData());
+        }
+
         packet = Optional.of(p);
       }
 
-    } catch (Exception e) {
-      logger.debug(e.getMessage(), e);
-      // nothing else
+    } catch (IOException e) {
+
+      logger.error(e.getMessage(), e);
+      Throwables.propagateIfPossible(e);
+
     }
 
     return packet;
+
   }
 
   @Override
@@ -138,16 +124,15 @@ public class HashicorpVaultStreamSource implements StreamSource {
 
   @Override
   public void init() {
-    vault = new Vault(config);
 
-    if (StringUtils.hasText(repoDef.getPassword())) {
-      try {
-        authResp = vault.auth().loginByUserPass(repoDef.getPassword(), repoDef.getUsername());
-        repoDef.setToken(authResp.getAuthClientToken());
-      } catch (VaultException e) {
-        com.google.common.base.Throwables.propagateIfPossible(e);
-      }
+    URI uri = repoDef.toURI();
+
+    if (repoDef.getAuthMethod() != null) {
+      String token = authenticator.authenticate(uri, repoDef);
+      repoDef.setToken(token);
     }
+
+    client = new OkHttpClient.Builder().build();
 
   }
 
