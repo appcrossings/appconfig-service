@@ -16,32 +16,31 @@ import io.undertow.servlet.api.DeploymentManager;
 public class ConfigServer {
 
   private static final Logger logger = LoggerFactory.getLogger(ConfigServer.class);
-  private static Undertow server;
-  private static DeploymentManager deploymentManager;
+  private Undertow undertow;
+  private static ConfigServer server;
+  private DeploymentManager deploymentManager;
 
   public static void main(String[] args) throws Throwable {
-
-    start(args[0]);
+    System.setProperty("org.jboss.logging.provider", "slf4j");
+    server = new ConfigServer();
+    server.start(args[0]);
   }
 
-  protected static void start(String port) throws Throwable {
-    
+  protected void start(String port) throws Throwable {
+
     long start = System.currentTimeMillis();
-    
-    System.setProperty("org.jboss.logging.provider", "slf4j");
 
-    if (server == null) {
+    PathHandler path = Handlers.path();
 
-      PathHandler path = Handlers.path();
-
-      server = Undertow.builder().addHttpListener(Integer.valueOf(port), "localhost")
+    if (undertow == null) {
+      undertow = Undertow.builder().addHttpListener(Integer.valueOf(port), "localhost")
           .setHandler(path).build();
 
       try {
-        server.start();
+        undertow.start();
       } catch (Exception e) {
         Throwable ex = Throwables.getRootCause(e);
-        logger.error(ex.getMessage(), ex);
+        logger.error(ex.getMessage());
         throw ex;
       }
 
@@ -64,30 +63,35 @@ public class ConfigServer {
         path.addPrefixPath("/", deploymentManager.start());
       } catch (ServletException e) {
         Throwable ex = Throwables.getRootCause(e);
-        logger.error(ex.getMessage(), ex);
+        logger.error(ex.getMessage());
         throw ex;
       }
 
       logger.info("Application deployed");
     }
-    
-    logger.info("Server started in " + (System.currentTimeMillis() - start) / 60 + "s");
+    logger.info("Server started in " + (System.currentTimeMillis() - start) / 1000 + "s");
 
   }
 
-  public static void stop() {
+  public void stop() {
 
-    if (server == null) {
-      throw new IllegalStateException("Server has not been started yet");
+    if (undertow != null) {
+
+      logger.info("Stopping server");
+
+      if (deploymentManager != null) {
+        deploymentManager.undeploy();
+      }
+
+      undertow.stop();
+      undertow = null;
+
+      logger.info("Server stopped");
+    } else {
+      logger.info("Server already stopped");
     }
 
-    logger.info("Stopping server");
 
-    deploymentManager.undeploy();
-    server.stop();
-    server = null;
-    
-    logger.info("Server stopped");
   }
 
 

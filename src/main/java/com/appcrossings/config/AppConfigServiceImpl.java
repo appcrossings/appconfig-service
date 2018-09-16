@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -25,10 +24,12 @@ public class AppConfigServiceImpl implements AppConfigService {
 
   private final ConfigSourceResolver resolver = new ConfigSourceResolver();
 
+  protected StringUtils strings;
+
   @Override
   public Response getTextProperties(String repo, String path, Boolean traverse, UriInfo info) {
 
-    logger.debug("Requested path" + path);
+    logger.debug("Requested path " + path);
 
     Response resp = Response.status(Status.NOT_FOUND).build();
     final String[] named = UriUtil.getFragments(info.getRequestUri());
@@ -78,6 +79,8 @@ public class AppConfigServiceImpl implements AppConfigService {
 
       }
     }
+    
+    props = new StringUtils(props).filled();
 
     return PropertiesProcessor.asProperties(props);
   }
@@ -105,59 +108,6 @@ public class AppConfigServiceImpl implements AppConfigService {
       return Response.status(Status.INTERNAL_SERVER_ERROR).cacheControl(control).build();
 
     }
-  }
-
-  @Override
-  public Response createNew(String repo, String path) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public Response discover(@DefaultValue(ConfigSourceResolver.DEFAULT_REPO_NAME) final String repo,
-      final String path, HashMap<String, Object> envProps) {
-
-    Response resp = Response.status(Status.NOT_FOUND).build();
-
-    // Optional<ConfigSource> configSource = resolver.findByRepoName(repo);
-    //
-    // if (configSource.isPresent()) {
-    //
-    // Properties hosts = configSource.get().getRaw(path);
-    //
-    // if (hosts != null && !hosts.isEmpty()) {
-    // Optional<URI> startPath =
-    // lookupStrategy.discover(hosts, PropertiesProcessor.asProperties(envProps));
-    //
-    // if (startPath.isPresent()) {
-    // logger.debug("Found config " + startPath.get());
-    // resp = Response.seeOther(URI.create(startPath.get())).build();
-    // }
-    // }
-    //
-    // } else {
-    // logger.error("Repo configuration missing configuration.");
-    // }
-
-    return resp;
-
-  }
-
-  @Override
-  public Response update(String repo, String path, String eTag) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /*
-   * @Override public Response patch(String repo, String path, String eTag) { // TODO Auto-generated
-   * method stub return null; }
-   */
-
-  @Override
-  public Response discoveryOptions(String repo, String path, HashMap<String, Object> envProps) {
-    // TODO Auto-generated method stub
-    return null;
   }
 
   @Override
