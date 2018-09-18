@@ -14,8 +14,8 @@ array:
   - value3
   named2:
   - value4:
-      sub: value
+      sub: true
   - value5:
-      sub: value
+      sub: 5
   - value6:
       sub: value

@@ -5,17 +5,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.appcrossings.config.processor.PropertiesProcessor;
 import com.appcrossings.config.source.ConfigSource;
 import com.appcrossings.config.util.StringUtils;
-import com.appcrossings.config.util.UriUtil;
 import com.jsoniter.output.JsonStream;
 
 public class AppConfigServiceImpl implements AppConfigService {
@@ -27,13 +26,11 @@ public class AppConfigServiceImpl implements AppConfigService {
   protected StringUtils strings;
 
   @Override
-  public Response getTextProperties(String repo, String path, Boolean traverse, UriInfo info) {
+  public Response getTextProperties(String repo, String path, Boolean traverse, Set<String> named) {
 
     logger.debug("Requested path " + path);
 
     Response resp = Response.status(Status.NOT_FOUND).build();
-    final String[] named = UriUtil.getFragments(info.getRequestUri());
-
     Properties props = getProperties(repo, path, traverse, named);
 
     if (!props.isEmpty()) {
@@ -46,17 +43,13 @@ public class AppConfigServiceImpl implements AppConfigService {
 
       resp = Response.ok(builder.toString(), MediaType.TEXT_PLAIN).encoding("UTF-8").build();
 
-    } else {
-
-      resp = Response.noContent().build();
-
     }
 
     return resp;
 
   }
 
-  protected Properties getProperties(String repo, String path, boolean traverse, String[] named) {
+  protected Properties getProperties(String repo, String path, boolean traverse, Set<String> named) {
 
     if (!StringUtils.hasText(repo))
       repo = ConfigSourceResolver.DEFAULT_REPO_NAME;
@@ -79,7 +72,7 @@ public class AppConfigServiceImpl implements AppConfigService {
 
       }
     }
-    
+
     props = new StringUtils(props).filled();
 
     return PropertiesProcessor.asProperties(props);
@@ -111,12 +104,11 @@ public class AppConfigServiceImpl implements AppConfigService {
   }
 
   @Override
-  public Response getJsonProperties(String repo, String path, Boolean traverse, UriInfo info) {
+  public Response getJsonProperties(String repo, String path, Boolean traverse, Set<String> named) {
 
     logger.debug("Requested path" + path);
 
     Response resp = Response.status(Status.NOT_FOUND).build();
-    final String[] named = UriUtil.getFragments(info.getRequestUri());
 
     Properties props = getProperties(repo, path, traverse, named);
 
@@ -132,12 +124,11 @@ public class AppConfigServiceImpl implements AppConfigService {
   }
 
   @Override
-  public Response getYamlProperties(String repo, String path, Boolean traverse, UriInfo info) {
+  public Response getYamlProperties(String repo, String path, Boolean traverse, Set<String> named) {
 
     logger.debug("Requested path" + path);
 
     Response resp = Response.status(Status.NOT_FOUND).build();
-    final String[] named = UriUtil.getFragments(info.getRequestUri());
 
     Properties props = getProperties(repo, path, traverse, named);
 

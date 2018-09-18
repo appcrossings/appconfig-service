@@ -1,19 +1,16 @@
 package com.appcrossings.config;
 
 
-import javax.validation.constraints.NotNull;
+import java.util.Set;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 @Path("/v1")
 public interface AppConfigService {
@@ -40,7 +37,7 @@ public interface AppConfigService {
   @Consumes({MediaType.WILDCARD})
   @Produces({MediaType.APPLICATION_JSON})
   Response getJsonProperties(@QueryParam("repo") String repo, @PathParam("path") String path,
-      @DefaultValue("true") @QueryParam("t") Boolean traverse, @Context UriInfo info);
+      @DefaultValue("true") @QueryParam("t") Boolean traverse, @QueryParam("p") Set<String> named);
 
 
   /**
@@ -59,7 +56,7 @@ public interface AppConfigService {
   @Consumes({MediaType.WILDCARD})
   @Produces({MediaType.TEXT_PLAIN})
   Response getTextProperties(@QueryParam("repo") String repo, @PathParam("path") String path,
-      @DefaultValue("true") @QueryParam("t") Boolean traverse, @Context UriInfo info);
+      @DefaultValue("true") @QueryParam("t") Boolean traverse, @QueryParam("p") Set<String> named);
 
   /**
    * Traverse the path to the root of the repo and return merged properties.
@@ -77,6 +74,6 @@ public interface AppConfigService {
   @Consumes({MediaType.WILDCARD})
   @Produces({"application/x-yam"})
   Response getYamlProperties(@QueryParam("repo") String repo, @PathParam("path") String path,
-      @DefaultValue("true") @QueryParam("t") Boolean traverse, @Context UriInfo info);
+      @DefaultValue("true") @QueryParam("t") Boolean traverse, @QueryParam("p") Set<String> named);
 
 }
