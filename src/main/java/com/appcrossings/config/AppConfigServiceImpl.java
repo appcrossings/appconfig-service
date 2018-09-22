@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.appcrossings.config.processor.PropertiesProcessor;
 import com.appcrossings.config.source.ConfigSource;
 import com.appcrossings.config.util.StringUtils;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.jsoniter.output.JsonStream;
 
 public class AppConfigServiceImpl implements AppConfigService {
@@ -49,7 +50,8 @@ public class AppConfigServiceImpl implements AppConfigService {
 
   }
 
-  protected Properties getProperties(String repo, String path, boolean traverse, Set<String> named) {
+  protected Properties getProperties(String repo, String path, boolean traverse,
+      Set<String> named) {
 
     if (!StringUtils.hasText(repo))
       repo = ConfigSourceResolver.DEFAULT_REPO_NAME;
@@ -114,8 +116,10 @@ public class AppConfigServiceImpl implements AppConfigService {
 
     if (!props.isEmpty()) {
 
-      resp = Response.ok(JsonStream.serialize(props.entrySet()), MediaType.APPLICATION_JSON)
-          .encoding("UTF-8").build();
+      Map<String, Object> hash = PropertiesProcessor.toMap(props);
+
+      resp = Response.ok(JsonStream.serialize(hash), MediaType.APPLICATION_JSON).encoding("UTF-8")
+          .build();
 
     }
 
@@ -124,7 +128,8 @@ public class AppConfigServiceImpl implements AppConfigService {
   }
 
   @Override
-  public Response getYamlProperties(String repo, String path, Boolean traverse, Set<String> named) {
+  public Response getYamlProperties(String repo, String path, Boolean traverse, Set<String> named)
+      throws Exception {
 
     logger.debug("Requested path" + path);
 
@@ -134,7 +139,8 @@ public class AppConfigServiceImpl implements AppConfigService {
 
     if (!props.isEmpty()) {
 
-      resp = Response.ok(props, "application/x-yml").encoding("UTF-8").build();
+      String jsonAsYaml = new YAMLMapper().writeValueAsString(PropertiesProcessor.toMap(props));
+      resp = Response.ok(jsonAsYaml, "application/x-yml").encoding("UTF-8").build();
 
     }
 
