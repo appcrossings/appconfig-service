@@ -5,18 +5,13 @@
 	<servers>
 		<server>
 			<id>tickerstorm-releases</id>
-			<username>${DOCKERHUB_USER}</username>
-			<password>${DOCKERHUB_PASSWORD}</password>
+			<username>${JFROG_USER}</username>
+			<password>${JFROG_PASSWORD}</password>
 		</server>
 		<server>
 			<id>tickerstorm-snapshots</id>
-			<username>${DOCKERHUB_USER}</username>
-			<password>${DOCKERHUB_PASSWORD}</password>
-		</server>
-		<server>
-			<id>tickerstorm-hub.DOCKERHUB.io</id>
-			<username>${DOCKERHUB_USER}</username>
-			<password>${DOCKERHUB_PASSWORD}</password>
+			<username>${JFROG_USER}</username>
+			<password>${JFROG_PASSWORD}</password>
 		</server>
 	</servers>
 </settings>
