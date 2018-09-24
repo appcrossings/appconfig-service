@@ -1,0 +1,78 @@
+version: 2
+jobs:
+  build-service:
+    docker:
+    - image: circleci/openjdk:8-jdk
+    steps:
+    - checkout
+    - run: mvn clean install -B -DskipITs -s .circleci/settings.xml
+    - save_cache:
+        key: appconfig-service-{{ .Branch }}-{{ checksum "pom.xml" }}-{{ .Environment.CIRCLE_SHA1 }}
+        paths:
+        - appconfig-service/target
+        - .m2
+    - store_test_results:
+        path: appconfig-service/target/surefire-reports
+  integration-test:
+    docker:
+    - image: circleci/openjdk:8-jdk
+    steps:
+    - checkout
+    - restore_cache:
+        key: appconfig-service-{{ .Branch }}-{{ checksum "pom.xml" }}-{{ .Environment.CIRCLE_SHA1 }}
+    - run: mvn integration-test verify -B  -s .circleci/settings.xml
+    - store_test_results:
+        path: appconfig-service/target/failsafe-reports
+    - store_artifacts:
+        path: appconfig-service/target
+  deploy-service:
+    docker:
+    - image: circleci/openjdk:8-jdk
+    steps:
+    - checkout
+    - restore_cache:
+        keys:
+        - appconfig-service-{{ .Branch }}-{{ checksum "pom.xml" }}-{{.Environment.CIRCLE_SHA1}}
+    - run: mvn jar:jar deploy:deploy -B -DskipTests -s .circleci/settings.xml
+    - store_artifacts:
+        path: appconfig-service/target
+  docker-push:
+    docker:
+    - image: circleci/openjdk:8-jdk
+    steps:
+    - checkout
+    - restore_cache:
+        key: appconfig-service-{{ .Branch }}-{{ checksum "pom.xml" }}-{{.Environment.CIRCLE_SHA1}}
+    - setup_remote_docker:
+        docker_layer_caching: true
+    - run:
+        name: Build and push docker image
+        command: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASS
+          set +e
+          docker pull $DOCKERHUB/${DOCKER_IMAGE_NAME}:latest
+          docker build --cache-from $DOCKERHUB/${DOCKER_IMAGE_NAME}:latest -t $DOCKERHUB/${DOCKER_IMAGE_NAME}:${CIRCLE_SHA1:0:7} .
+          docker push $DOCKERHUB/${DOCKER_IMAGE_NAME}:${CIRCLE_SHA1:0:7}
+          docker tag $DOCKERHUB/${DOCKER_IMAGE_NAME}:${CIRCLE_SHA1:0:7} $DOCKERHUB/${DOCKER_IMAGE_NAME}:latest
+          docker push $DOCKERHUB/${DOCKER_IMAGE_NAME}:latest
+workflows:
+  version: 2
+  build_push:
+    jobs:
+    - build-components
+    - deploy-components:
+        requires:
+        - build-components
+    - build-service:
+        requires:
+        - deploy-components
+    - deploy-service:
+        requires:
+        - build-service
+    - docker-push:
+        filters:
+          branches:
+            only:
+            - v2-dev
+        requires:
+        - deploy-service
