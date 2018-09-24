@@ -1,7 +1,8 @@
 version: 2
 jobs:
   build-service:
-    working_directory: ~/project
+    docker:
+    - image: circleci/openjdk:8-jdk
     environment:
       CC_TEST_REPORTER_ID: 4c5109885099b7b3280b919cda43c0202c2969f658484dc1c55b6588561b8c6c
     steps:
@@ -71,16 +72,13 @@ workflows:
   version: 2
   build_push:
     jobs:
-    - build-components
-    - deploy-components:
-        requires:
-        - build-components
-    - build-service:
-        requires:
-        - deploy-components
-    - deploy-service:
+    - build-service
+    - integration-test:
         requires:
         - build-service
+    - deploy-service:
+        requires:
+        - integration-test
     - docker-push:
         filters:
           branches:
