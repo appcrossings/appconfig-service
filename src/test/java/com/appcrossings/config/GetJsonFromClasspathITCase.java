@@ -1,6 +1,5 @@
 package com.appcrossings.config;
 
-import java.io.StringReader;
 import java.util.Map;
 import java.util.Properties;
 import javax.ws.rs.core.MediaType;

@@ -49,6 +49,8 @@ public abstract class AbstractITCase {
   public static void teardown() throws Exception {
     if (server != null)
       server.stop();
+
+    System.clearProperty(ConfigSourceResolver.CONFIGRD_SYSTEM_PROPERTY);
   }
 
 }
