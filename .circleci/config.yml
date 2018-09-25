@@ -30,6 +30,7 @@ jobs:
         paths:
         - target
         - ./vault
+        - ./cc-test-reporter
         - ~/.m2
     - store_test_results:
         path: target/surefire-reports
