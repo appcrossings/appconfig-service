@@ -29,6 +29,7 @@ jobs:
         key: appconfig-service-{{ .Branch }}-{{ checksum "pom.xml" }}-{{ .Environment.CIRCLE_SHA1 }}
         paths:
         - target
+        - ./vault
         - ~/.m2
     - store_test_results:
         path: target/surefire-reports
