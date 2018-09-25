@@ -3,11 +3,23 @@ package com.appcrossings.config;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 
 public class HealthCheckITCase extends AbstractITCase {
+
+  @BeforeClass
+  public static void setup() throws Throwable {
+    AbstractITCase.setup();
+  }
+
+  @AfterClass
+  public static void teardown() throws Exception {
+    AbstractITCase.teardown();
+  }
 
   @Test
   public void testHealthEndpoint() throws Exception {
