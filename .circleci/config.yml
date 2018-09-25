@@ -37,6 +37,8 @@ jobs:
   integration-test:
     docker:
     - image: circleci/openjdk:8-jdk
+    environment:
+      CC_TEST_REPORTER_ID: 4c5109885099b7b3280b919cda43c0202c2969f658484dc1c55b6588561b8c6c
     steps:
     - checkout
     - restore_cache:
