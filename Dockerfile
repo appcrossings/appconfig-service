@@ -3,7 +3,7 @@ FROM openjdk:8-jdk-alpine
 MAINTAINER Krzysztof Karski <krzysztof.karski@emergenttech.com>
 
 ENV REPO_DEFS=classpath:repo-defaults.yml
-ENV PORT=8871
+ENV PORT=8891
 
 COPY ./target/appconfig-service-*-exec.jar /apps/
 WORKDIR /apps
