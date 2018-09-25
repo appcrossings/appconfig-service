@@ -167,7 +167,7 @@
 								<fileSet>
 									<directory>${project.build.directory}/coverage-reports</directory>
 									<includes>
-										<include>*.exec</include>
+										<include>*t.exec</include>
 									</includes>
 								</fileSet>
 							</fileSets>
