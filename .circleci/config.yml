@@ -54,7 +54,7 @@ jobs:
     - run:
         name: Upload Code Climate test-reporter
         command: |
-          ./cc-test-reporter format-coverage -d -t jacoco target/site/jacoco/jacoco.xml -o target/coverage/codeclimate.json
+          ./cc-test-reporter format-coverage -d --add-prefix src/main/java -t jacoco target/site/jacoco/jacoco.xml -o target/coverage/codeclimate.json
           ./cc-test-reporter upload-coverage -d -i target/coverage/codeclimate.json
     - store_test_results:
         path: target/failsafe-reports
