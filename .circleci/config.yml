@@ -10,6 +10,7 @@ jobs:
     - run:
         name: Download vault
         command: |
+          pwd
           curl https://releases.hashicorp.com/vault/0.11.1/vault_0.11.1_linux_amd64.zip --output ./vault.zip
           unzip vault.zip
           ./vault server -dev &
@@ -17,7 +18,7 @@ jobs:
           sleep 2
           ./vault auth enable userpass
           ./vault write auth/userpass/users/test password=password policies=admins
-          ./vault policy write admins ./src/test/resources/vault-setup/admin.hcl  
+          ./vault policy write admins src/test/resources/vault-setup/admin.hcl  
     - run:
         name: Setup Code Climate test-reporter
         command: |
