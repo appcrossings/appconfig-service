@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.appcrossings.config.hashicorp.AbstractTestSuiteITCase;
 import com.appcrossings.config.processor.PropertiesProcessor;
 import com.appcrossings.config.processor.YamlProcessor;
 

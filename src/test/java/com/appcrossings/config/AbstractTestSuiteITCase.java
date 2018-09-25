@@ -1,10 +1,9 @@
-package com.appcrossings.config.hashicorp;
+package com.appcrossings.config;
 
 import java.util.Properties;
 import javax.ws.rs.core.Response;
 import org.junit.Assert;
 import org.junit.Test;
-import com.appcrossings.config.AbstractITCase;
 
 public abstract class AbstractTestSuiteITCase extends AbstractITCase {
 
