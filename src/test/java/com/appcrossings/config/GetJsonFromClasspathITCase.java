@@ -12,23 +12,25 @@ import com.appcrossings.config.processor.PropertiesProcessor;
 import com.jsoniter.JsonIterator;
 import com.jsoniter.spi.TypeLiteral;
 
-
 public class GetJsonFromClasspathITCase extends AbstractTestSuiteITCase {
 
   private static final Logger logger = LoggerFactory.getLogger(GetJsonFromClasspathITCase.class);
 
+  static {
+    System.setProperty(ConfigSourceResolver.CONFIGRD_CONFIG,
+        "classpath:classpath-repos.yaml");
+  }
+
   @BeforeClass
   public static void setup() throws Throwable {
 
-    System.setProperty(ConfigSourceResolver.CONFIGRD_SYSTEM_PROPERTY,
-        "classpath:classpath-repos.yaml");
-    AbstractITCase.setup();
-
+    TestConfigServer.serverStart();
+    logger.info("Running " + GetJsonFromClasspathITCase.class.getName());
   }
 
   @AfterClass
   public static void teardown() throws Exception {
-    AbstractITCase.teardown();
+    TestConfigServer.serverStop();
   }
 
   @Before
@@ -43,7 +45,8 @@ public class GetJsonFromClasspathITCase extends AbstractTestSuiteITCase {
   @Override
   public Properties convert(String body) throws Exception {
 
-    Map<String, Object> map = JsonIterator.deserialize(body, new TypeLiteral<Map<String, Object>>(){});
+    Map<String, Object> map =
+        JsonIterator.deserialize(body, new TypeLiteral<Map<String, Object>>() {});
     return PropertiesProcessor.asProperties(map);
   }
 

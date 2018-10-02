@@ -10,17 +10,17 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.appcrossings.config.ConfigSourceResolver;
 
 public class GetTextValuesFromFilePathITCase extends AbstractTestSuiteITCase {
 
   private static final Logger logger =
       LoggerFactory.getLogger(GetTextValuesFromFilePathITCase.class);
 
+  
   @BeforeClass
   public static void setup() throws Throwable {
 
-    System.setProperty(ConfigSourceResolver.CONFIGRD_SYSTEM_PROPERTY,
+    System.setProperty(ConfigSourceResolver.CONFIGRD_CONFIG,
         "file:/tmp/junit/file-repos.yaml");
 
     System.out.println(
@@ -32,13 +32,15 @@ public class GetTextValuesFromFilePathITCase extends AbstractTestSuiteITCase {
         FileUtils.toFile(GetTextValuesFromFilePathITCase.class.getResource("/")),
         new File("/tmp/junit"));
 
-    AbstractITCase.setup();
+    TestConfigServer.serverStart();
+
+    logger.info("Running " + GetTextValuesFromFilePathITCase.class.getName());
 
   }
 
   @AfterClass
   public static void teardown() throws Exception {
-    AbstractITCase.teardown();
+    TestConfigServer.serverStop();
     FileUtils.forceDelete(new File("/tmp/junit"));
   }
 
@@ -50,7 +52,7 @@ public class GetTextValuesFromFilePathITCase extends AbstractTestSuiteITCase {
     content = MediaType.TEXT_PLAIN_TYPE;
     accept = MediaType.TEXT_PLAIN_TYPE;
   }
-  
+
   @Override
   public Properties convert(String body) throws Exception {
     Properties props = new Properties();

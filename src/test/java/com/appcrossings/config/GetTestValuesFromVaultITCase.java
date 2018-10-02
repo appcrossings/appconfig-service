@@ -11,22 +11,18 @@ import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+public class GetTestValuesFromVaultITCase extends AbstractTestSuiteITCase {
 
-public class GetTextValuesFromClasspathITCase extends AbstractTestSuiteITCase {
-
-  private static final Logger logger =
-      LoggerFactory.getLogger(GetTextValuesFromClasspathITCase.class);
- 
+  private static final Logger logger = LoggerFactory.getLogger(GetTestValuesFromVaultITCase.class);
+  
   
   
   @BeforeClass
   public static void setup() throws Throwable {
 
-    System.setProperty(ConfigSourceResolver.CONFIGRD_CONFIG, "classpath:classpath-repos.yaml");
+    System.setProperty(ConfigSourceResolver.CONFIGRD_CONFIG, "classpath:vault-repos.yaml");
     TestConfigServer.serverStart();
-   
-    logger.info("Running " + GetTextValuesFromClasspathITCase.class.getName());
-
+    logger.info("Running " + GetTestValuesFromVaultITCase.class.getName());
   }
 
   @AfterClass
@@ -38,6 +34,12 @@ public class GetTextValuesFromClasspathITCase extends AbstractTestSuiteITCase {
   @Override
   public void init() throws Exception {
     super.init();
+
+    do {
+      Thread.sleep(100);
+    } while (System.getProperty(
+        ConfigSourceResolver.CONFIGRD_CONFIG) != "classpath:vault-repos.yaml");
+
     target = client.target("http://localhost:8891/configrd/v1/");
     content = MediaType.TEXT_PLAIN_TYPE;
     accept = MediaType.TEXT_PLAIN_TYPE;
@@ -49,6 +51,5 @@ public class GetTextValuesFromClasspathITCase extends AbstractTestSuiteITCase {
     props.load(new StringReader(body));
     return props;
   }
-
 
 }

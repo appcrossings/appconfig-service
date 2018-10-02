@@ -16,19 +16,24 @@ import com.google.common.base.Throwables;
 @SuppressWarnings("serial")
 public class HashicorpRepoDef extends DefaultRepoDef implements SecuredRepo {
 
-  public static final String AUTH_METHOD_FIELD ="authMethod";
-  
+  public static final String AUTH_METHOD_FIELD = "authMethod";
+
   public enum AuthMethod {
 
     IAM, UserPass;
 
   }
-  private String authMethod;
-  private String keystoreFile;
-  private String password;
-  private String passwordFile;
-  private String token;
-  private String username;
+
+  protected String authMethod;
+  protected String keystoreFile;
+  protected String password;
+  protected String passwordFile;
+  protected String token;
+  protected String username;
+
+  public String getPasswordFile() {
+    return passwordFile;
+  }
 
   public HashicorpRepoDef(String name, Map<String, Object> values) {
 
@@ -50,21 +55,24 @@ public class HashicorpRepoDef extends DefaultRepoDef implements SecuredRepo {
     return keystoreFile;
   }
 
-  public String getPassword() {
-    return password;
-  }
-
-  public String getPasswordFile() {
-    return passwordFile;
-  }
-
   public String getToken() {
     return token;
   }
 
-  @Override
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
   public String getUsername() {
     return username;
+  }
+
+  public void setPasswordFile(String passwordFile) {
+    this.passwordFile = passwordFile;
   }
 
   public void setAuthMethod(String authMethod) {
@@ -75,11 +83,7 @@ public class HashicorpRepoDef extends DefaultRepoDef implements SecuredRepo {
     this.keystoreFile = keystoreFile;
   }
 
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  public void setPasswordFile(String passwordFile) {
+  public void setPassWordFile(String passwordFile) {
     this.passwordFile = passwordFile;
 
     File passfile = new File(passwordFile);
@@ -122,6 +126,11 @@ public class HashicorpRepoDef extends DefaultRepoDef implements SecuredRepo {
     }
 
     return err;
+  }
+
+  @Override
+  public String getStreamSource() {
+    return HashicorpVaultStreamSource.HASHICORP_VAULT;
   }
 
 }

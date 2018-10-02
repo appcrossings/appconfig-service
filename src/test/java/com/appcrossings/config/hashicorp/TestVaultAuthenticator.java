@@ -15,7 +15,7 @@ public class TestVaultAuthenticator {
 
     HashicorpRepoDef value = new HashicorpRepoDef("name", new HashMap<>());
     value.setPassword("testUser");
-    value.setUsername("passWord");
+    value.setUsername("password");
 
     URI uri = URI.create("http://localhost:8200/v1/mount");
     Assert.assertEquals("mount", VaultUtil.extractMount(uri));

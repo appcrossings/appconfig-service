@@ -16,18 +16,20 @@ public class GetYamlFromClasspathITCase extends AbstractTestSuiteITCase {
 
   private static final Logger logger = LoggerFactory.getLogger(GetYamlFromClasspathITCase.class);
 
+
+  
   @BeforeClass
   public static void setup() throws Throwable {
 
-    System.setProperty(ConfigSourceResolver.CONFIGRD_SYSTEM_PROPERTY,
+    System.setProperty(ConfigSourceResolver.CONFIGRD_CONFIG,
         "classpath:classpath-repos.yaml");
-    AbstractITCase.setup();
-
+    TestConfigServer.serverStart();
+    logger.info("Running " + GetYamlFromClasspathITCase.class.getName());
   }
 
   @AfterClass
   public static void teardown() throws Exception {
-    AbstractITCase.teardown();
+    TestConfigServer.serverStop();
   }
 
   @Before

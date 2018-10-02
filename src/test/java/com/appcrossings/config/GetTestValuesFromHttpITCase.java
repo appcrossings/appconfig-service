@@ -6,6 +6,8 @@ import javax.ws.rs.core.MediaType;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,18 +16,20 @@ public class GetTestValuesFromHttpITCase extends AbstractTestSuiteITCase {
   private static final Logger logger =
       LoggerFactory.getLogger(GetTestValuesFromHttpITCase.class);
 
+ 
+ 
   @BeforeClass
   public static void setup() throws Throwable {
 
-    System.setProperty(ConfigSourceResolver.CONFIGRD_SYSTEM_PROPERTY,
-        "http://config.appcrossings.net/http-repos.yaml");
-    AbstractITCase.setup();
+    System.setProperty(ConfigSourceResolver.CONFIGRD_CONFIG, "http://config.appcrossings.net/http-repos.yaml");
+    TestConfigServer.serverStart();
+    logger.info("Running " + GetTestValuesFromHttpITCase.class.getName());
 
   }
 
   @AfterClass
   public static void teardown() throws Exception {
-    AbstractITCase.teardown();
+    TestConfigServer.serverStop();
   }
 
   @Before

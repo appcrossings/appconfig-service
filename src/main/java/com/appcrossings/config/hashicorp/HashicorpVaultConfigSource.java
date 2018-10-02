@@ -37,11 +37,22 @@ public class HashicorpVaultConfigSource extends DefaultConfigSource
   public boolean put(String path, Map<String, Object> props) {
 
     HashicorpVaultStreamSource source = (HashicorpVaultStreamSource) getStreamSource();
-    PropertyPacket packet = new PropertyPacket(URI.create(path));
-    packet.putAll(props);
+
+    PropertyPacket packet = null;
+    if (!(props instanceof PropertyPacket)) {
+
+      packet = new PropertyPacket(URI.create(path));
+      packet.putAll(props);
+    
+    }else {
+      
+      packet = (PropertyPacket) props;
+      
+    }
+    
     boolean success = source.put(path, packet);
     return success;
-    
+
   }
 
   @Override
@@ -54,8 +65,8 @@ public class HashicorpVaultConfigSource extends DefaultConfigSource
       existing = packet.get();
 
     existing.putAll(props);
-    
-    if(StringUtils.hasText(etag))
+
+    if (StringUtils.hasText(etag))
       existing.setETag(etag);
 
     HashicorpVaultStreamSource source = (HashicorpVaultStreamSource) getStreamSource();

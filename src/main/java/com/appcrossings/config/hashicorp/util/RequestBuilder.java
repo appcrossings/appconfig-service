@@ -55,9 +55,15 @@ public class RequestBuilder {
 
   private static String buildURL(URI uri, String path) {
 
-    final String URL =
+    if (path.trim().startsWith("/"))
+      path = org.apache.commons.lang3.StringUtils.removeFirst(path, "/");
+
+    String URL =
         VaultUtil.extractBaseURL(uri) + "/v1/" + VaultUtil.extractPathPrefix(uri) + "/" + path;
 
+    if(URL.endsWith("/"))
+      URL = org.apache.commons.lang3.StringUtils.removeEnd(URL, "/");
+    
     return URL;
   }
 

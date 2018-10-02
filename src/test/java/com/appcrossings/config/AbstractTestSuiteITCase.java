@@ -1,11 +1,26 @@
 package com.appcrossings.config;
 
 import java.util.Properties;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
-public abstract class AbstractTestSuiteITCase extends AbstractITCase {
+public abstract class AbstractTestSuiteITCase {
+  
+  protected Client client;
+  protected WebTarget target;
+  protected MediaType content;
+  protected MediaType accept;
+  
+  @Before
+  public void init() throws Exception {
+    client = ClientBuilder.newClient();
+  }
 
   @Test
   public void testGetValuesFromDefaultRepo() throws Exception {

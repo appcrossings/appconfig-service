@@ -1,6 +1,7 @@
 package com.appcrossings.config;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -14,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.appcrossings.config.processor.PropertiesProcessor;
 import com.appcrossings.config.source.ConfigSource;
+import com.appcrossings.config.source.PropertyPacket;
+import com.appcrossings.config.source.WritableConfigSource;
 import com.appcrossings.config.util.StringUtils;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.jsoniter.output.JsonStream;
@@ -142,6 +145,41 @@ public class AppConfigServiceImpl implements AppConfigService {
       String jsonAsYaml = new YAMLMapper().writeValueAsString(PropertiesProcessor.toMap(props));
       resp = Response.ok(jsonAsYaml, "application/x-yml").encoding("UTF-8").build();
 
+    }
+
+    return resp;
+  }
+
+  @Override
+  public Response putTextProperties(String repo, String path, String eTag, InputStream body)
+      throws Exception {
+
+    Response resp = Response.serverError().build();
+
+    if (body == null) {
+      return Response.status(Status.BAD_REQUEST).build();
+    }
+
+    if (!StringUtils.hasText(path))
+      path = "/";
+
+    Optional<ConfigSource> source = resolver.findByRepoName(repo);
+
+    if (source.isPresent() && source.get() instanceof WritableConfigSource) {
+
+      WritableConfigSource writer = (WritableConfigSource) source.get();
+
+      Properties props = new Properties();
+      props.load(body);
+
+      PropertyPacket packet = new PropertyPacket(URI.create(path));
+      packet.setETag(eTag);
+      packet.putAll(PropertiesProcessor.toMap(props));
+      boolean success = writer.put(path, packet);
+
+      if (success) {
+        resp = Response.created(URI.create(path)).build();
+      }
     }
 
     return resp;

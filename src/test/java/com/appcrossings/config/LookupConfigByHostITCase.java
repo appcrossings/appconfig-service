@@ -2,7 +2,10 @@ package com.appcrossings.config;
 
 
 import java.util.Map;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.collections.map.HashedMap;
@@ -13,12 +16,18 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 @Ignore
-public class LookupConfigByHostITCase extends AbstractITCase {
+public class LookupConfigByHostITCase extends TestConfigServer {
 
-  @Override
+
+  protected Client client;
+  protected WebTarget target;
+  protected MediaType content;
+  protected MediaType accept;
+
+
   @Before
   public void init() throws Exception {
-    super.init();
+    client = ClientBuilder.newClient();
     target = client.target("http://localhost:8891/configrd/v1/q/");
   }
 

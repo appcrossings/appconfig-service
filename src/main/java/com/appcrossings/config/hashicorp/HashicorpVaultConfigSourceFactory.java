@@ -31,6 +31,7 @@ public class HashicorpVaultConfigSourceFactory implements ConfigSourceFactory {
 
   public HashicorpVaultStreamSource newStreamSource(String name, Map<String, Object> values,
       Map<String, Object> defaults) {
+    
     final Map<String, Object> merged = new HashMap<>(defaults);
     merged.putAll(values);
 
