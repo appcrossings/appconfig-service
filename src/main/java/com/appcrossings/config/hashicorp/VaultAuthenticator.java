@@ -83,9 +83,11 @@ public class VaultAuthenticator {
 
     Request req = new Request.Builder().post(RequestBody.create(mediaType, json)).url(url).build();
 
+    Response resp = null;
+
     try {
 
-      Response resp = client.newCall(req).execute();
+      resp = client.newCall(req).execute();
 
       if (resp.isSuccessful() && resp.body().contentLength() > 0) {
 
@@ -112,6 +114,8 @@ public class VaultAuthenticator {
 
     } catch (IOException e) {
       throw new RuntimeException(e);
+    } finally {
+      resp.close();
     }
 
     return auth;

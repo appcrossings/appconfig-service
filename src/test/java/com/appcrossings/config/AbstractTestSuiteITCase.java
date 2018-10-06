@@ -279,7 +279,7 @@ public abstract class AbstractTestSuiteITCase {
 
   }
 
-  @Test
+  
   public void testGetPropertiesFromJsonFile() throws Exception {
 
     Response resp = target.path("/env/dev/json").queryParam("repo", "appx-j").request(accept).get();
@@ -313,7 +313,7 @@ public abstract class AbstractTestSuiteITCase {
 
   }
 
-  @Test
+  
   public void testGetPropertiesFromYamlFile() throws Exception {
 
     Response resp = target.path("/env/dev/yaml").queryParam("repo", "appx-y").request(accept).get();

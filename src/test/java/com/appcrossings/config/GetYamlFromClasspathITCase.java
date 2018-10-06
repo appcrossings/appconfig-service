@@ -6,6 +6,7 @@ import javax.ws.rs.core.MediaType;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.appcrossings.config.processor.PropertiesProcessor;
@@ -16,8 +17,6 @@ public class GetYamlFromClasspathITCase extends AbstractTestSuiteITCase {
 
   private static final Logger logger = LoggerFactory.getLogger(GetYamlFromClasspathITCase.class);
 
-
-  
   @BeforeClass
   public static void setup() throws Throwable {
 
@@ -39,6 +38,18 @@ public class GetYamlFromClasspathITCase extends AbstractTestSuiteITCase {
     target = client.target("http://localhost:8891/configrd/v1/");
     content = MediaType.TEXT_PLAIN_TYPE;
     accept = new MediaType("application", "x-yam");
+  }
+  
+  @Test
+  @Override
+  public void testGetPropertiesFromJsonFile() throws Exception {
+    super.testGetPropertiesFromJsonFile();
+  }
+
+  @Test
+  @Override
+  public void testGetPropertiesFromYamlFile() throws Exception {
+    super.testGetPropertiesFromYamlFile();
   }
 
   @Override

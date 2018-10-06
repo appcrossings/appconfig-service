@@ -16,16 +16,17 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.appcrossings.config.hashicorp.VaultImportUtil;
 
 public class PutTextToVaultITCase {
-  
+
   protected Client client;
   protected WebTarget target;
   protected MediaType content;
   protected MediaType accept;
 
   private static final Logger logger = LoggerFactory.getLogger(PutTextToVaultITCase.class);
-  
+
   @BeforeClass
   public static void setup() throws Throwable {
     System.setProperty(ConfigSourceResolver.CONFIGRD_CONFIG, "classpath:vault-repos.yaml");
@@ -89,6 +90,34 @@ public class PutTextToVaultITCase {
     // Assert.assertNotNull(etag);
 
     resp = target.queryParam("repo", "appx-d").request(accept).get();
+    // Assert.assertNotNull(resp.getHeaders().getFirst("Etag"));
+
+    // Assert.assertEquals(etag, resp.getHeaders().getFirst("Etag"));
+
+    String val = resp.readEntity(String.class);
+    Properties vprops = new Properties();
+    vprops.load(IOUtils.toInputStream(val, "UTF-8"));
+    Assert.assertEquals(props, vprops);
+
+  }
+
+  @Test
+  public void putTextPropertiesToPathWithFileName() throws Exception {
+
+    String file =
+        IOUtils.toString(getClass().getResource("/default.properties").openStream(), "UTF-8");
+
+    Properties props = new Properties();
+    props.load(IOUtils.toInputStream(file, "UTF-8"));
+
+    Response resp = target.path("/default.properties").queryParam("repo", "appx-d").request(accept)
+        .put(Entity.text(file));
+
+    Assert.assertEquals(Status.CREATED.getStatusCode(), resp.getStatus());
+    String etag = (String) resp.getHeaders().getFirst("Etag");
+    // Assert.assertNotNull(etag);
+
+    resp = target.path("/default.properties").queryParam("repo", "appx-d").request(accept).get();
     // Assert.assertNotNull(resp.getHeaders().getFirst("Etag"));
 
     // Assert.assertEquals(etag, resp.getHeaders().getFirst("Etag"));

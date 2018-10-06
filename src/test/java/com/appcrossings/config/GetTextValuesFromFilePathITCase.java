@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +52,18 @@ public class GetTextValuesFromFilePathITCase extends AbstractTestSuiteITCase {
     target = client.target("http://localhost:8891/configrd/v1/");
     content = MediaType.TEXT_PLAIN_TYPE;
     accept = MediaType.TEXT_PLAIN_TYPE;
+  }
+  
+  @Test
+  @Override
+  public void testGetPropertiesFromJsonFile() throws Exception {
+    super.testGetPropertiesFromJsonFile();
+  }
+
+  @Test
+  @Override
+  public void testGetPropertiesFromYamlFile() throws Exception {
+    super.testGetPropertiesFromYamlFile();
   }
 
   @Override

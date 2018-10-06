@@ -51,10 +51,10 @@ public class HashicorpVaultStreamSource implements StreamSource {
         put = RequestBuilder.v2_postKv(repoDef, path, packet.getETag(), packet);
     }
 
-    logger.debug("Put to " + put.toString());
-    try {
+    logger.debug("Post to " + put.toString());
 
-      Response response = client.newCall(put).execute();
+    try (Response response = client.newCall(put).execute()) {
+
       success = response.isSuccessful();
 
     } catch (IOException e) {
@@ -73,9 +73,8 @@ public class HashicorpVaultStreamSource implements StreamSource {
 
     Request get = RequestBuilder.v2_getKv(repoDef, path);
     logger.debug("Get from " + get.toString());
-    try {
 
-      final Response response = client.newCall(get).execute();
+    try (Response response = client.newCall(get).execute()) {
 
       if (response.isSuccessful()) {
 

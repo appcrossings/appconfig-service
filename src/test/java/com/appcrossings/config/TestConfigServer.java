@@ -10,10 +10,7 @@ public abstract class TestConfigServer {
   public static void serverStart() throws Throwable {
 
     System.setProperty("org.jboss.logging.provider", "slf4j");
-
-    if (server != null)
-      server.stop();
-
+    
     server = new ConfigServer();
 
     try {
