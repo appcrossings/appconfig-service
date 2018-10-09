@@ -5,40 +5,43 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.junit4.SpringRunner;
 
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ApplicationContext.class}, webEnvironment = WebEnvironment.DEFINED_PORT)
-public class HealthCheckITCase {
+public class HealthCheckITCase extends TestConfigServer {
 
-  Client client = null;
 
-  @Before
-  public void init() {
-    client = ClientBuilder.newClient();
+  protected Client client;
+  protected WebTarget target;
+  protected MediaType content;
+  protected MediaType accept;
+  
+  @BeforeClass
+  public static void setup() throws Throwable {
+    TestConfigServer.serverStart();
+  }
+
+  @AfterClass
+  public static void teardown() throws Exception {
+    TestConfigServer.serverStop();
   }
 
   @Test
   public void testHealthEndpoint() throws Exception {
-
+    client = ClientBuilder.newClient();
     WebTarget target = client.target("http://localhost:8891/configrd/v1/health");
 
     Response resp = target.request().accept(MediaType.WILDCARD).get();
     Assert.assertEquals(200, resp.getStatus());
-    Object body = resp.getEntity();
+    String body = resp.readEntity(String.class);
 
-    // String body = (String) IOUtils.toString(resp.getEntity());
-    // Assert.assertTrue(body.contains("version"));
-    // Assert.assertTrue(body.contains("build"));
-
-
+    Assert.assertTrue(body.contains("version"));
+    Assert.assertTrue(body.contains("build"));
   }
+
+
 
 }

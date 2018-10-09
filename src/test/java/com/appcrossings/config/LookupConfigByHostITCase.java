@@ -14,26 +14,21 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.junit4.SpringRunner;
 
 @Ignore
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ApplicationContext.class},
-    webEnvironment = WebEnvironment.DEFINED_PORT)
-public class LookupConfigByHostITCase {
+public class LookupConfigByHostITCase extends TestConfigServer {
+
 
   protected Client client;
   protected WebTarget target;
+  protected MediaType content;
+  protected MediaType accept;
+
 
   @Before
   public void init() throws Exception {
-
     client = ClientBuilder.newClient();
     target = client.target("http://localhost:8891/configrd/v1/q/");
-
   }
 
   @Test
@@ -45,15 +40,16 @@ public class LookupConfigByHostITCase {
     post.put(Environment.ENV_NAME, "test");
 
     target.property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
-    
+
     Response resp = target.path("env/http/hosts.properties").request(MediaType.APPLICATION_JSON)
         .accept(MediaType.WILDCARD).post(Entity.entity(post, MediaType.APPLICATION_JSON));
-    
+
     Assert.assertEquals(303, resp.getStatus());
-    Assert.assertEquals("http://localhost:8891/configrd/v1/env/http/default.properties", resp.getLocation().toString());
+    Assert.assertEquals("http://localhost:8891/configrd/v1/env/http/default.properties",
+        resp.getLocation().toString());
 
   }
-  
+
   @Test
   public void testResolveFileLocationViaHost() throws Exception {
 
@@ -63,15 +59,16 @@ public class LookupConfigByHostITCase {
     post.put(Environment.ENV_NAME, "test");
 
     target.property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
-    
+
     Response resp = target.path("/env/http/hosts.properties").request(MediaType.APPLICATION_JSON)
         .accept(MediaType.WILDCARD).post(Entity.entity(post, MediaType.APPLICATION_JSON));
-    
+
     Assert.assertEquals(303, resp.getStatus());
-    Assert.assertEquals("file:src/main/resources/env/http/default.properties", resp.getLocation().toString());
+    Assert.assertEquals("file:src/main/resources/env/http/default.properties",
+        resp.getLocation().toString());
 
   }
-  
+
   @Test
   public void testResolveClasspathLocationViaHost() throws Exception {
 
@@ -81,15 +78,15 @@ public class LookupConfigByHostITCase {
     post.put(Environment.ENV_NAME, "test");
 
     target.property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
-    
+
     Response resp = target.path("/env/http/hosts.properties").request(MediaType.APPLICATION_JSON)
         .accept(MediaType.WILDCARD).post(Entity.entity(post, MediaType.APPLICATION_JSON));
-    
+
     Assert.assertEquals(303, resp.getStatus());
     Assert.assertEquals("classpath:env/http/default.properties", resp.getLocation().toString());
 
   }
-  
+
   @Test
   public void testResolveDefaultLocationViaHost() throws Exception {
 
@@ -99,12 +96,13 @@ public class LookupConfigByHostITCase {
     post.put(Environment.ENV_NAME, "test");
 
     target.property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
-    
+
     Response resp = target.path("/env/http/hosts.properties").request(MediaType.APPLICATION_JSON)
         .accept(MediaType.WILDCARD).post(Entity.entity(post, MediaType.APPLICATION_JSON));
-    
+
     Assert.assertEquals(303, resp.getStatus());
-    Assert.assertEquals("http://localhost:8891/configrd/v1/env/http/default.properties", resp.getLocation().toString());
+    Assert.assertEquals("http://localhost:8891/configrd/v1/env/http/default.properties",
+        resp.getLocation().toString());
 
   }
 

@@ -1,44 +1,40 @@
 package com.appcrossings.config;
 
+import java.io.InputStream;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import javax.ws.rs.DefaultValue;
+import java.util.Set;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Service;
+import com.appcrossings.config.processor.PropertiesProcessor;
 import com.appcrossings.config.source.ConfigSource;
+import com.appcrossings.config.source.PropertyPacket;
+import com.appcrossings.config.source.WritableConfigSource;
 import com.appcrossings.config.util.StringUtils;
-import com.appcrossings.config.util.UriUtil;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.jsoniter.output.JsonStream;
 
-@Service
 public class AppConfigServiceImpl implements AppConfigService {
 
   private static final Logger logger = LoggerFactory.getLogger(AppConfigService.class);
 
-  @Autowired
-  private ConfigSourceResolver resolver;
+  private final ConfigSourceResolver resolver = new ConfigSourceResolver();
 
-  private final DefaultResourceLoader loader = new DefaultResourceLoader();
+  protected StringUtils strings;
 
   @Override
-  public Response getTextProperties(String repo, String path, Boolean traverse, UriInfo info) {
+  public Response getTextProperties(String repo, String path, Boolean traverse, Set<String> named) {
 
-    logger.debug("Requested path" + path);
+    logger.debug("Requested path " + path);
 
     Response resp = Response.status(Status.NOT_FOUND).build();
-    final String[] named = UriUtil.getFragments(info.getRequestUri());
-
     Properties props = getProperties(repo, path, traverse, named);
 
     if (!props.isEmpty()) {
@@ -51,17 +47,14 @@ public class AppConfigServiceImpl implements AppConfigService {
 
       resp = Response.ok(builder.toString(), MediaType.TEXT_PLAIN).encoding("UTF-8").build();
 
-    } else {
-
-      resp = Response.noContent().build();
-
     }
 
     return resp;
 
   }
 
-  protected Properties getProperties(String repo, String path, boolean traverse, String[] named) {
+  protected Properties getProperties(String repo, String path, boolean traverse,
+      Set<String> named) {
 
     if (!StringUtils.hasText(repo))
       repo = ConfigSourceResolver.DEFAULT_REPO_NAME;
@@ -70,7 +63,7 @@ public class AppConfigServiceImpl implements AppConfigService {
       path = "/";
 
     Optional<ConfigSource> source = resolver.findByRepoName(repo);
-    Properties props = new Properties();
+    Map<String, Object> props = new HashMap<>();
 
     if (source.isPresent()) {
 
@@ -85,7 +78,9 @@ public class AppConfigServiceImpl implements AppConfigService {
       }
     }
 
-    return props;
+    props = new StringUtils(props).filled();
+
+    return PropertiesProcessor.asProperties(props);
   }
 
   @Override
@@ -97,9 +92,9 @@ public class AppConfigServiceImpl implements AppConfigService {
 
     try {
 
-      Resource r = loader.getResource("health.properties");
+      InputStream r = getClass().getClassLoader().getResourceAsStream("health.properties");
       Properties props = new Properties();
-      props.load(r.getInputStream());
+      props.load(r);
 
       Map<Object, Object> health = new HashMap<Object, Object>();
       health.putAll(props);
@@ -114,72 +109,20 @@ public class AppConfigServiceImpl implements AppConfigService {
   }
 
   @Override
-  public Response createNew(String repo, String path) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public Response discover(@DefaultValue(ConfigSourceResolver.DEFAULT_REPO_NAME) final String repo,
-      final String path, HashMap<String, Object> envProps) {
-
-    Response resp = Response.status(Status.NOT_FOUND).build();
-
-    // Optional<ConfigSource> configSource = resolver.findByRepoName(repo);
-    //
-    // if (configSource.isPresent()) {
-    //
-    // Properties hosts = configSource.get().getRaw(path);
-    //
-    // if (hosts != null && !hosts.isEmpty()) {
-    // Optional<URI> startPath =
-    // lookupStrategy.discover(hosts, PropertiesProcessor.asProperties(envProps));
-    //
-    // if (startPath.isPresent()) {
-    // logger.debug("Found config " + startPath.get());
-    // resp = Response.seeOther(URI.create(startPath.get())).build();
-    // }
-    // }
-    //
-    // } else {
-    // logger.error("Repo configuration missing configuration.");
-    // }
-
-    return resp;
-
-  }
-
-  @Override
-  public Response update(String repo, String path, String eTag) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /*
-   * @Override public Response patch(String repo, String path, String eTag) { // TODO Auto-generated
-   * method stub return null; }
-   */
-
-  @Override
-  public Response discoveryOptions(String repo, String path, HashMap<String, Object> envProps) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public Response getJsonProperties(String repo, String path, Boolean traverse, UriInfo info) {
+  public Response getJsonProperties(String repo, String path, Boolean traverse, Set<String> named) {
 
     logger.debug("Requested path" + path);
 
     Response resp = Response.status(Status.NOT_FOUND).build();
-    final String[] named = UriUtil.getFragments(info.getRequestUri());
 
     Properties props = getProperties(repo, path, traverse, named);
 
     if (!props.isEmpty()) {
 
-      resp = Response.ok(JsonStream.serialize(props.entrySet()), MediaType.APPLICATION_JSON)
-          .encoding("UTF-8").build();
+      Map<String, Object> hash = PropertiesProcessor.toMap(props);
+
+      resp = Response.ok(JsonStream.serialize(hash), MediaType.APPLICATION_JSON).encoding("UTF-8")
+          .build();
 
     }
 
@@ -188,19 +131,55 @@ public class AppConfigServiceImpl implements AppConfigService {
   }
 
   @Override
-  public Response getYamlProperties(String repo, String path, Boolean traverse, UriInfo info) {
+  public Response getYamlProperties(String repo, String path, Boolean traverse, Set<String> named)
+      throws Exception {
 
     logger.debug("Requested path" + path);
 
     Response resp = Response.status(Status.NOT_FOUND).build();
-    final String[] named = UriUtil.getFragments(info.getRequestUri());
 
     Properties props = getProperties(repo, path, traverse, named);
 
     if (!props.isEmpty()) {
 
-      resp = Response.ok(props, "application/x-yml").encoding("UTF-8").build();
+      String jsonAsYaml = new YAMLMapper().writeValueAsString(PropertiesProcessor.toMap(props));
+      resp = Response.ok(jsonAsYaml, "application/x-yml").encoding("UTF-8").build();
 
+    }
+
+    return resp;
+  }
+
+  @Override
+  public Response putTextProperties(String repo, String path, String eTag, InputStream body)
+      throws Exception {
+
+    Response resp = Response.serverError().build();
+
+    if (body == null) {
+      return Response.status(Status.BAD_REQUEST).build();
+    }
+
+    if (!StringUtils.hasText(path))
+      path = "/";
+
+    Optional<ConfigSource> source = resolver.findByRepoName(repo);
+
+    if (source.isPresent() && source.get() instanceof WritableConfigSource) {
+
+      WritableConfigSource writer = (WritableConfigSource) source.get();
+
+      Properties props = new Properties();
+      props.load(body);
+
+      PropertyPacket packet = new PropertyPacket(URI.create(path));
+      packet.setETag(eTag);
+      packet.putAll(PropertiesProcessor.toMap(props));
+      boolean success = writer.put(path, packet);
+
+      if (success) {
+        resp = Response.created(URI.create(path)).build();
+      }
     }
 
     return resp;

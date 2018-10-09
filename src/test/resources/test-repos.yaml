@@ -20,6 +20,12 @@ service:
     appx-d:
       uri: classpath:/env/dev
       fileName: default.json
+    appx-j:
+      uri: classpath:/
+      fileName: default.json
+    appx-y:
+      uri: classpath:/
+      fileName: default.yaml
     classpath:
       uri: classpath:/
     default:
@@ -27,3 +33,8 @@ service:
       named:
         custom: env/dev/custom
         simple: env/dev/simple
+    classpath-env:
+      uri: classpath:/env
+      named:
+        custom: dev/custom
+        simple: dev/simple
