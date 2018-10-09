@@ -7,8 +7,6 @@ import com.appcrossings.config.source.ConfigSourceFactory;
 
 public class HashicorpVaultConfigSourceFactory implements ConfigSourceFactory {
 
-  private VaultAuthenticator authenticator = new VaultAuthenticator();
-
   @Override
   public ConfigSource newConfigSource(String name, Map<String, Object> values,
       Map<String, Object> defaults) {

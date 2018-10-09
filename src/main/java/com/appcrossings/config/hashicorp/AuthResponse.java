@@ -12,5 +12,6 @@ public class AuthResponse {
   public String[] warnings = new String[] {};
   public Auth auth;
   public String[] errors = new String[] {};
+  public String nonce;
 
 }

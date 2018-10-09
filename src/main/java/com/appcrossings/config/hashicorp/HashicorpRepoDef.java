@@ -20,7 +20,7 @@ public class HashicorpRepoDef extends DefaultRepoDef implements SecuredRepo {
 
   public enum AuthMethod {
 
-    IAM, UserPass;
+    AWS_IAM, UserPass, AWS_PKCS7;
 
   }
 
@@ -30,6 +30,16 @@ public class HashicorpRepoDef extends DefaultRepoDef implements SecuredRepo {
   protected String passwordFile;
   protected String token;
   protected String username;
+  protected String awsRoleArn;
+  
+  
+  public String getAwsRoleArn() {
+    return awsRoleArn;
+  }
+
+  public void setAwsRoleArn(String awsRoleArn) {
+    this.awsRoleArn = awsRoleArn;
+  }
 
   public String getPasswordFile() {
     return passwordFile;

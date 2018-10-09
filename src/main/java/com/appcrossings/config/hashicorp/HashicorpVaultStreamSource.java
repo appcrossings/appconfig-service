@@ -26,6 +26,7 @@ public class HashicorpVaultStreamSource implements StreamSource {
 
   private final HashicorpRepoDef repoDef;
   private final URIBuilder builder;
+  private AuthResponse auth;
 
   private OkHttpClient client;
 
@@ -127,8 +128,11 @@ public class HashicorpVaultStreamSource implements StreamSource {
     URI uri = repoDef.toURI();
 
     if (repoDef.getAuthMethod() != null) {
-      String token = authenticator.authenticate(uri, repoDef);
-      repoDef.setToken(token);
+      Optional<AuthResponse> opt = authenticator.authenticate(uri, repoDef, auth);
+
+      if (opt.isPresent()) {
+        repoDef.setToken(opt.get().auth.client_token);
+      }
     }
 
     client = new OkHttpClient.Builder().build();

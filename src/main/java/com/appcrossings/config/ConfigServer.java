@@ -4,7 +4,7 @@ import javax.servlet.ServletException;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.amazonaws.util.Throwables;
+import com.google.common.base.Throwables;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.handlers.PathHandler;
